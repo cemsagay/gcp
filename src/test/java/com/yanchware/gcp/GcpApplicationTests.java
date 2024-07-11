@@ -2,8 +2,7 @@ package com.yanchware.gcp;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -28,12 +27,37 @@ class GcpApplicationTests {
 	@MockBean
 	private ServiceInstanceController ServiceInstanceController;
 
+	public String zone="";
+	public String project= "";
+	public String instanceId = "";
+
 	@Test
-	void greetingShouldReturnDefaultMessage() throws Exception {
+	void createInstance() throws Exception {
 		Object service;
-		when(ServiceInstanceController.actions("us-central1-c","bilsag","instance-20240711-135322","stop")).thenReturn(ResponseEntity.ok("Instance stop action completed successfully."));
-		this.mockMvc.perform(post("/gcp/us-central1-c/bilsag/instance-20240711-135322/stop")).andDo(print()).andExpect(status().isOk())
+		when(ServiceInstanceController.provision(zone,project,instanceId)).thenReturn(ResponseEntity.ok("Instance provisioned successfully."));
+		this.mockMvc.perform(post("/gcp/"+zone+"/"+project+"/"+instanceId)).andDo(print()).andExpect(status().isOk())
+				.andExpect(content().string(containsString("Instance provisioned successfully.")));
+	}
+	@Test
+	void startInstance() throws Exception {
+		Object service;
+		when(ServiceInstanceController.actions(zone,project,instanceId,"start")).thenReturn(ResponseEntity.ok("Instance start action completed successfully."));
+		this.mockMvc.perform(post("/gcp/"+zone+"/"+project+"/"+instanceId+"/start")).andDo(print()).andExpect(status().isOk())
+				.andExpect(content().string(containsString("Instance start action completed successfully.")));
+	}
+	@Test
+	void stopInstance() throws Exception {
+		Object service;
+		when(ServiceInstanceController.actions(zone,project,instanceId,"stop")).thenReturn(ResponseEntity.ok("Instance stop action completed successfully."));
+		this.mockMvc.perform(post("/gcp/"+zone+"/"+project+"/"+instanceId+"/stop")).andDo(print()).andExpect(status().isOk())
 				.andExpect(content().string(containsString("Instance stop action completed successfully.")));
+	}
+	@Test
+	void deleteInstance() throws Exception {
+		Object service;
+		when(ServiceInstanceController.deprovision(zone,project,instanceId)).thenReturn(ResponseEntity.ok("Instance deprovisioned successfully."));
+		this.mockMvc.perform(delete("/gcp/"+zone+"/"+project+"/"+instanceId)).andDo(print()).andExpect(status().isOk())
+				.andExpect(content().string(containsString("Instance deprovisioned successfully.")));
 	}
 
 }
